@@ -6,24 +6,55 @@ const waterLink = document.getElementById('water')
 const grassLink = document.getElementById('grass')
 const legendaryLink = document.getElementById('legendary')
 
-function criarCardPokemon(curso) {
+async function buscarPokemonsPorTipo(tipo) {
+    const url = `https://pokeapi.co/api/v2/type/${tipo}`
+    const response = await fetch(url)
+    const data = await response.json()
+
+    const listaBasica = data.pokemon.slice(0, 12)
+
+    const promessas = listaBasica.map(async (item) => {
+        const res = await fetch(item.pokemon.url)
+        return await res.json()
+    })
+
+    return await Promise.all(promessas)
+}
+
+async function buscarLendarios() {
+    const idsLendarios = [144, 145, 146, 150, 151, 243, 244, 245, 249, 250, 382, 383, 384]
+    
+    const promessas = idsLendarios.map(async (id) => {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+        return await res.json()
+    })
+
+    return await Promise.all(promessas)
+}
+
+function criarCardPokemon(pokemon) {
     const card = document.createElement('div')
     card.className = 'card'
 
-    card.onclick = () => alert(`Pokemon #${curso.id}\nTítulo: ${curso.titulo}\nDuração: ${curso.duracao}`)
+    const tipos = pokemon.types.map(t => t.type.name).join(', ')
+
+    card.onclick = () => alert(`Pokemon #${pokemon.id}\nNome: ${pokemon.name}\nTipo: ${tipos}`)
 
     const id = document.createElement('span')
     id.className = 'card-id'
-    id.textContent = `#${curso.id}`
+    id.textContent = `#${pokemon.id}`
 
-    const titulo = document.createElement('h3')
-    titulo.textContent = curso.titulo
+    const img = document.createElement('img')
+    img.src = pokemon.sprites.front_default
+    img.alt = pokemon.name
 
-    const duracao = document.createElement('span')
-    duracao.className = 'card-duracao'
-    duracao.textContent = `Duração: ${curso.duracao}`
+    const nome = document.createElement('h3')
+    nome.textContent = pokemon.name.toUpperCase()
 
-    card.append(id, titulo, duracao)
+    const tipoSpan = document.createElement('span')
+    tipoSpan.textContent = `Tipo: ${tipos}`
+
+    card.append(id, img, nome, tipoSpan)
 
     return card
 }
@@ -38,56 +69,104 @@ function homePage(){
 
 }
 
-function firePage(){
+async function firePage() {
     const root = document.getElementById('root')
-    root.className = 'about'
+    root.className = 'fire'
+
     const titulo = document.createElement('h1')
     titulo.classList.add('titulo')
     titulo.textContent = 'Fire'
 
     const texto = document.createElement('p')
-    texto.textContent = 'Pokemons de fogo'
+    texto.textContent = 'Carregando Pokémons de fogo...'
 
-    root.replaceChildren(titulo, texto)
+    const container = document.createElement('div')
+    container.className = 'pokemons-container'
+
+    root.replaceChildren(titulo, texto, container)
+
+    const pokemons = await buscarPokemonsPorTipo('fire')
+    texto.textContent = 'Pokémons de fogo'
+
+    pokemons.forEach(pokemon => {
+        const card = criarCardPokemon(pokemon)
+        container.appendChild(card)
+    })
 }
 
-function waterPage(){
+async function waterPage() {
     const root = document.getElementById('root')
-    root.className = 'about'
+    root.className = 'water'
+
     const titulo = document.createElement('h1')
     titulo.classList.add('titulo')
     titulo.textContent = 'Water'
 
     const texto = document.createElement('p')
-    texto.textContent = 'Pokemons de água'
+    texto.textContent = 'Carregando Pokémons de água...'
 
-    root.replaceChildren(titulo, texto)
+    const container = document.createElement('div')
+    container.className = 'pokemons-container'
+
+    root.replaceChildren(titulo, texto, container)
+
+    const pokemons = await buscarPokemonsPorTipo('water')
+    texto.textContent = 'Pokémons de água'
+
+    pokemons.forEach(pokemon => {
+        const card = criarCardPokemon(pokemon)
+        container.appendChild(card)
+    })
 }
 
-function grassPage(){
+async function grassPage() {
     const root = document.getElementById('root')
-    root.className = 'about'
+    root.className = 'grass'
+
     const titulo = document.createElement('h1')
     titulo.classList.add('titulo')
     titulo.textContent = 'Grass'
 
     const texto = document.createElement('p')
-    texto.textContent = 'Pokemons de grama'
+    texto.textContent = 'Carregando Pokémons de grama...'
 
-    root.replaceChildren(titulo, texto)
+    const container = document.createElement('div')
+    container.className = 'pokemons-container'
+
+    root.replaceChildren(titulo, texto, container)
+
+    const pokemons = await buscarPokemonsPorTipo('grass')
+    texto.textContent = 'Pokémons de grama'
+
+    pokemons.forEach(pokemon => {
+        const card = criarCardPokemon(pokemon)
+        container.appendChild(card)
+    })
 }
 
-function legendaryPage(){
+async function legendaryPage() {
     const root = document.getElementById('root')
-    root.className = 'about'
+    root.className = 'legendary'
+
     const titulo = document.createElement('h1')
     titulo.classList.add('titulo')
     titulo.textContent = 'Legendary'
 
     const texto = document.createElement('p')
-    texto.textContent = 'Pokemons lendários'
+    texto.textContent = 'Carregando Pokémons lendários...'
 
-    root.replaceChildren(titulo, texto)
+    const container = document.createElement('div')
+    container.className = 'pokemons-container'
+
+    root.replaceChildren(titulo, texto, container)
+
+    const pokemons = await buscarLendarios()
+    texto.textContent = 'Pokémons lendários'
+
+    pokemons.forEach(pokemon => {
+        const card = criarCardPokemon(pokemon)
+        container.appendChild(card)
+    })
 }
 
 homePage()
